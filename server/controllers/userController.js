@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 
 //register user
 const createUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   try {
     //check if user already exists
     const existsUser = await User.findOne({ email });
@@ -21,12 +21,13 @@ const createUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role: role || 'user'  // Default to 'user' if not specified
     });
     await newUser.save();
 
     //generate JWT token
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email },
+      { id: newUser._id, email: newUser.email, role: newUser.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -54,7 +55,7 @@ const loginUser = async (req, res) => {
     }
     //generate JWT token
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );

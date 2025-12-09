@@ -47,13 +47,13 @@ const getPropertyById = async (req, res) => {
 // Create new property
 const createProperty = async (req, res) => {
   try {
-    const { title, description, price, location, area, bedrooms, images } = req.body;
+    const { title, description, price, location, area, bedrooms, images, contactPhone, contactWhatsapp, contactEmail } = req.body;
     
     // Validate required fields
-    if (!title || !price || !location || !area || !bedrooms) {
+    if (!title || !price || !location || !area || !bedrooms || !contactPhone) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Please provide all required fields: title, price, location, area, bedrooms' 
+        message: 'Please provide all required fields: title, price, location, area, bedrooms, contactPhone' 
       });
     }
 
@@ -64,7 +64,11 @@ const createProperty = async (req, res) => {
       location,
       area,
       bedrooms,
-      images: images || []
+      images: images || [],
+      contactPhone,
+      contactWhatsapp,
+      contactEmail,
+      agent: req.user._id  // Assign authenticated user as agent
     });
 
     await newProperty.save();
@@ -83,6 +87,11 @@ const updateProperty = async (req, res) => {
     
     if (!property) {
       return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    // Check ownership (agents can only update their own properties, admins can update any)
+    if (req.user.role !== 'admin' && property.agent.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You can only update your own properties' });
     }
 
     // Update fields
@@ -110,8 +119,23 @@ const deleteProperty = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Property not found' });
     }
 
+    // Check ownership (agents can only delete their own properties, admins can delete any)
+    if (req.user.role !== 'admin' && property.agent.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You can only delete your own properties' });
+    }
+
     await Property.findByIdAndDelete(req.params.id);
     res.status(200).json({ success: true, message: 'Property deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Get agent's own properties
+const getMyProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({ agent: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: properties.length, data: properties });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
@@ -122,5 +146,6 @@ module.exports = {
   getPropertyById,
   createProperty,
   updateProperty,
-  deleteProperty
+  deleteProperty,
+  getMyProperties
 };

@@ -1,0 +1,112 @@
+.properties-page {
+  min-height: 100vh;
+}
+
+.properties-header {
+  background: linear-gradient(135deg, var(--primary-blue-light) 0%, var(--accent-blue) 100%);
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.properties-header h1 {
+  font-size: 48px;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.properties-header p {
+  font-size: 20px;
+  color: var(--text-gray);
+}
+
+.properties-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 40px;
+  padding: 60px 20px;
+}
+
+/* Filters Sidebar */
+.filters-sidebar {
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+}
+
+.filters-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+
+.filters-card h3 {
+  font-size: 20px;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+}
+
+.filters-card .btn-full {
+  margin-top: 12px;
+}
+
+/* Properties Main */
+.properties-main {
+  min-height: 400px;
+}
+
+.properties-count {
+  margin-bottom: 24px;
+}
+
+.properties-count p {
+  color: var(--text-gray);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+.no-properties {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-light);
+  font-size: 18px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .properties-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .filters-sidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .properties-header h1 {
+    font-size: 36px;
+  }
+
+  .properties-header p {
+    font-size: 16px;
+  }
+
+  .properties-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

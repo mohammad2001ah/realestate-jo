@@ -1,0 +1,116 @@
+.my-properties-page {
+  min-height: 100vh;
+}
+
+.my-properties-header {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  padding: 60px 20px;
+  text-align: center;
+  color: white;
+}
+
+.my-properties-header h1 {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.my-properties-header p {
+  font-size: 20px;
+  opacity: 0.95;
+}
+
+.my-properties-content {
+  padding: 60px 20px;
+}
+
+.properties-count {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.properties-count p {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+.property-item {
+  position: relative;
+}
+
+.property-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.property-actions .btn {
+  flex: 1;
+}
+
+.btn-danger {
+  background: #EF4444;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+  background: #DC2626;
+  transform: translateY(-2px);
+}
+
+.no-properties {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.no-properties p {
+  font-size: 20px;
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+@media (max-width: 768px) {
+  .my-properties-header h1 {
+    font-size: 36px;
+  }
+
+  .my-properties-header p {
+    font-size: 16px;
+  }
+
+  .properties-count {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .properties-grid {
+    grid-template-columns: 1fr;
+  }
+}
