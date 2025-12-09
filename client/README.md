@@ -1,70 +1,318 @@
-# Getting Started with Create React App
+# 🏡 Real Estate Jordan
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern full-stack real estate platform built with the MERN stack (MongoDB, Express.js, React, Node.js) for property listings and management in Jordan.
 
-## Available Scripts
+## 📋 Table of Contents
 
-In the project directory, you can run:
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Database Schema](#database-schema)
+- [Contributing](#contributing)
+- [License](#license)
 
-### `npm start`
+## 🌟 Overview
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Real Estate Jordan is a comprehensive property management platform designed to connect property buyers, sellers, and agents in Jordan. The application provides a seamless experience for browsing, listing, and managing real estate properties.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## ✨ Features
 
-### `npm test`
+### Current Features
+- 🔐 **User Authentication**: Secure registration and login with JWT tokens
+- 👤 **User Management**: Role-based access control (user/admin)
+- 🏠 **Property Listings**: Comprehensive property information including:
+  - Title and description
+  - Price and location
+  - Area and bedroom count
+  - Multiple image support
+- 🔒 **Secure Password Handling**: Bcrypt password hashing
+- ⏱️ **Timestamps**: Automatic tracking of creation and update times
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Planned Features
+- 🔍 Advanced property search and filtering
+- 📍 Interactive map integration
+- 💬 Messaging system between buyers and agents
+- ⭐ Property favorites and saved searches
+- 📊 Admin dashboard for property management
+- 📱 Responsive mobile design
 
-### `npm run build`
+## 🛠️ Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Frontend
+- **React** (v19.2.1) - UI library
+- **React DOM** - DOM rendering
+- **React Scripts** (v5.0.1) - Build tooling
+- **Testing Library** - Component testing
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Backend
+- **Node.js** - Runtime environment
+- **Express.js** (v5.2.1) - Web framework
+- **MongoDB** - NoSQL database
+- **Mongoose** (v9.0.1) - ODM for MongoDB
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Security & Authentication
+- **JWT** (jsonwebtoken v9.0.3) - Token-based authentication
+- **Bcrypt** (v6.0.0) - Password hashing
 
-### `npm run eject`
+### Additional Tools
+- **CORS** (v2.8.5) - Cross-origin resource sharing
+- **Dotenv** (v17.2.3) - Environment variable management
+- **Morgan** (v1.10.1) - HTTP request logger
+- **Multer** (v2.0.2) - File upload handling
+- **Nodemon** (v3.1.11) - Development auto-restart
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📁 Project Structure
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+realestate-jo/
+├── client/                 # React frontend
+│   ├── public/            # Static files
+│   ├── src/               # Source files
+│   │   ├── App.js         # Main application component
+│   │   ├── App.css        # Application styles
+│   │   ├── index.js       # Entry point
+│   │   └── index.css      # Global styles
+│   └── package.json       # Frontend dependencies
+│
+├── server/                # Node.js backend
+│   ├── config/            # Configuration files
+│   │   └── DB.js          # Database connection
+│   ├── controllers/       # Request handlers
+│   │   └── userController.js
+│   ├── model/             # Mongoose schemas
+│   │   ├── user.js        # User model
+│   │   └── property.js    # Property model
+│   ├── router/            # API routes
+│   │   └── userRouter.js  # User routes
+│   ├── .env               # Environment variables
+│   ├── server.js          # Server entry point
+│   └── package.json       # Backend dependencies
+│
+└── README.md              # Project documentation
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🚀 Getting Started
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Prerequisites
 
-## Learn More
+Before you begin, ensure you have the following installed:
+- **Node.js** (v14 or higher)
+- **npm** or **yarn**
+- **MongoDB** (local installation or MongoDB Atlas account)
+- **Git**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Installation
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/mohammad2001ah/realestate-jo.git
+   cd realestate-jo
+   ```
 
-### Code Splitting
+2. **Install server dependencies**
+   ```bash
+   cd server
+   npm install
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+3. **Install client dependencies**
+   ```bash
+   cd client
+   npm install
+   ```
 
-### Analyzing the Bundle Size
+### Environment Variables
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Create a `.env` file in the `server` directory with the following variables:
 
-### Making a Progressive Web App
+```env
+# Server Configuration
+PORT=5000
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# Database
+MONGODB_URI=mongodb://localhost:27017/realestate-jo
+# Or for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/realestate-jo
 
-### Advanced Configuration
+# JWT Secret
+JWT_SECRET=your_super_secret_jwt_key_here_change_in_production
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+# Environment
+NODE_ENV=development
+```
 
-### Deployment
+> ⚠️ **Security Note**: Never commit your `.env` file to version control. Make sure it's listed in `.gitignore`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Running the Application
 
-### `npm run build` fails to minify
+#### Development Mode
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. **Start the backend server** (from the `server` directory):
+   ```bash
+   npm start
+   # or with nodemon for auto-restart
+   nodemon server.js
+   ```
+   The server will run on `http://localhost:5000`
+
+2. **Start the frontend** (from the `client` directory):
+   ```bash
+   npm start
+   ```
+   The React app will run on `http://localhost:3000`
+
+#### Production Mode
+
+1. **Build the frontend**:
+   ```bash
+   cd client
+   npm run build
+   ```
+
+2. **Serve the application**:
+   Configure your server to serve the built React app and handle API requests.
+
+## 📚 API Documentation
+
+### Base URL
+```
+http://localhost:5000/api
+```
+
+### Authentication Endpoints
+
+#### Register User
+```http
+POST /api/users/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "User created successfully",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### Login User
+```http
+POST /api/users/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "securePassword123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Property Endpoints (Coming Soon)
+- `GET /api/properties` - Get all properties
+- `GET /api/properties/:id` - Get property by ID
+- `POST /api/properties` - Create new property (authenticated)
+- `PUT /api/properties/:id` - Update property (authenticated)
+- `DELETE /api/properties/:id` - Delete property (authenticated)
+
+## 🗄️ Database Schema
+
+### User Model
+```javascript
+{
+  name: String (required),
+  email: String (required, unique),
+  password: String (required, hashed),
+  role: String (default: "user"),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Property Model
+```javascript
+{
+  title: String (required),
+  description: String,
+  price: Number (required),
+  location: String (required),
+  area: Number (required),
+  bedrooms: Number (required),
+  images: [String],
+  // agent: ObjectId (ref: User) - Coming soon
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+## 🧪 Testing
+
+### Run Frontend Tests
+```bash
+cd client
+npm test
+```
+
+### Run Backend Tests (Coming Soon)
+```bash
+cd server
+npm test
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Coding Standards
+- Follow ESLint configuration
+- Write meaningful commit messages
+- Add tests for new features
+- Update documentation as needed
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+- **Mohammad** - *Initial work* - [mohammad2001ah](https://github.com/mohammad2001ah)
+
+## 🙏 Acknowledgments
+
+- React team for the amazing frontend library
+- Express.js community for the robust backend framework
+- MongoDB for the flexible database solution
+- All contributors who help improve this project
+
+## 📞 Support
+
+For support, email mohammad2001ah@example.com or open an issue in the GitHub repository.
+
+---
+
+**Made with ❤️ in Jordan**
