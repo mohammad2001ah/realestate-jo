@@ -65,4 +65,84 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser, loginUser };
+// Get all users (Admin only)
+const getAllUsers = async (req, res) => {
+  try {
+    // Fetch all users, excluding password field
+    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+    res.status(200).json({ 
+      success: true, 
+      count: users.length, 
+      data: users 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Update user (Admin only)
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, role } = req.body;
+    const userId = req.params.id;
+
+    // Find user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: "Email already in use" });
+      }
+    }
+
+    // Update fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (role) user.role = role;
+
+    await user.save();
+
+    // Return user without password
+    const updatedUser = await User.findById(userId).select('-password');
+    res.status(200).json({ 
+      success: true, 
+      message: "User updated successfully", 
+      data: updatedUser 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Delete user (Admin only)
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Prevent admin from deleting themselves
+    if (req.user && req.user._id.toString() === userId) {
+      return res.status(400).json({ success: false, message: "You cannot delete your own account" });
+    }
+
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ 
+      success: true, 
+      message: "User deleted successfully" 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+module.exports = { createUser, loginUser, getAllUsers, updateUser, deleteUser };
