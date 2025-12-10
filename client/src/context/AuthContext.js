@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setUser(userData);
       
-      return { success: true };
+      return { success: true, user: userData };
     } catch (error) {
       return {
         success: false,

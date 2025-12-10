@@ -9,6 +9,7 @@ const Navbar = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isAdminPage = location.pathname.startsWith('/admin');
   const [showLangDropdown, setShowLangDropdown] = useState(false);
 
   // Load saved language on mount
@@ -40,6 +41,12 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    // Just reload the current page to refresh the UI
+    window.location.reload();
+  };
+
   return (
     <nav className="navbar">
       <div className="container navbar-content">
@@ -58,8 +65,8 @@ const Navbar = () => {
           <li>
             <Link to="/properties" className="nav-link">{t('nav.properties')}</Link>
           </li>
-          {/* Show About and Contact on home page */}
-          {isHomePage && (
+          {/* Show About and Contact on home page only (not on admin page) */}
+          {isHomePage && !isAdminPage && (
             <>
               <li>
                 <button onClick={() => scrollToSection('.about-us')} className="nav-link nav-link-btn">
@@ -91,32 +98,34 @@ const Navbar = () => {
         </ul>
 
         <div className="nav-actions">
-          {/* Language Dropdown */}
-          <div className="language-dropdown">
-            <button 
-              onClick={() => setShowLangDropdown(!showLangDropdown)} 
-              className="language-btn"
-            >
-              {i18n.language === 'en' ? 'English' : 'العربية'}
-              <span className="dropdown-arrow">▼</span>
-            </button>
-            {showLangDropdown && (
-              <div className="language-menu">
-                <button 
-                  onClick={() => changeLanguage('en')} 
-                  className={`language-option ${i18n.language === 'en' ? 'active' : ''}`}
-                >
-                  English
-                </button>
-                <button 
-                  onClick={() => changeLanguage('ar')} 
-                  className={`language-option ${i18n.language === 'ar' ? 'active' : ''}`}
-                >
-                  العربية
-                </button>
-              </div>
-            )}
-          </div>
+          {/* Language Dropdown - Hide on admin page */}
+          {!isAdminPage && (
+            <div className="language-dropdown">
+              <button 
+                onClick={() => setShowLangDropdown(!showLangDropdown)} 
+                className="language-btn"
+              >
+                {i18n.language === 'en' ? 'English' : 'العربية'}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              {showLangDropdown && (
+                <div className="language-menu">
+                  <button 
+                    onClick={() => changeLanguage('en')} 
+                    className={`language-option ${i18n.language === 'en' ? 'active' : ''}`}
+                  >
+                    English
+                  </button>
+                  <button 
+                    onClick={() => changeLanguage('ar')} 
+                    className={`language-option ${i18n.language === 'ar' ? 'active' : ''}`}
+                  >
+                    العربية
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {isAuthenticated ? (
             <>
@@ -128,7 +137,7 @@ const Navbar = () => {
                   </span>
                 )}
               </div>
-              <button onClick={logout} className="btn btn-secondary">
+              <button onClick={handleLogout} className="btn btn-secondary">
                 {t('nav.logout')}
               </button>
             </>
