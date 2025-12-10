@@ -25,6 +25,9 @@ const Login = () => {
       // Redirect based on user role
       if (result.user && result.user.role === 'admin') {
         navigate('/admin');
+      } else if (result.user && result.user.role === 'agent') {
+        // Agent users go to their properties page
+        navigate('/my-properties');
       } else {
         // Regular users go to properties page
         navigate('/properties');
