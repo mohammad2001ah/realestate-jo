@@ -43,8 +43,8 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    // Just reload the current page to refresh the UI
-    window.location.reload();
+    // Redirect to login page after logout
+    window.location.href = '/login';
   };
 
   return (

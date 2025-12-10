@@ -22,11 +22,12 @@ const Login = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      // Redirect admin to admin panel directly
+      // Redirect based on user role
       if (result.user && result.user.role === 'admin') {
         navigate('/admin');
       } else {
-        navigate('/');
+        // Regular users go to properties page
+        navigate('/properties');
       }
     } else {
       setError(result.message);
