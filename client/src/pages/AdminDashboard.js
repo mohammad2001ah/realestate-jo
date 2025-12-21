@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { getAllProperties, deleteProperty, getAllUsers, updateUser, deleteUser } from '../services/api';
+import { getAllProperties, deleteProperty, getAllUsers, updateUser, deleteUser, getPendingProperties, approveProperty, rejectProperty } from '../services/api';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
+  const [pendingProperties, setPendingProperties] = useState([]);
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalUsers: 0,
     totalAgents: 0,
+    pendingProperties: 0,
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('properties');
@@ -29,6 +31,20 @@ const AdminDashboard = () => {
       const propertiesData = await getAllProperties();
       setProperties(propertiesData.data);
 
+      // Fetch pending properties
+      try {
+        const pendingData = await getPendingProperties();
+        setPendingProperties(pendingData.data);
+        
+        setStats(prev => ({
+          ...prev,
+          pendingProperties: pendingData.data.length
+        }));
+      } catch (error) {
+        console.error('Error fetching pending properties:', error);
+        setPendingProperties([]);
+      }
+
       // Fetch users
       try {
         const usersData = await getAllUsers();
@@ -40,6 +56,7 @@ const AdminDashboard = () => {
           totalProperties: propertiesData.data.length,
           totalUsers: usersData.data.length,
           totalAgents: agentCount,
+          pendingProperties: 0, // Will be updated after fetching pending
         });
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -47,6 +64,7 @@ const AdminDashboard = () => {
           totalProperties: propertiesData.data.length,
           totalUsers: 0,
           totalAgents: 0,
+          pendingProperties: 0,
         });
       }
     } catch (error) {
@@ -110,6 +128,33 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleApproveProperty = async (id) => {
+    try {
+      await approveProperty(id);
+      setPendingProperties(pendingProperties.filter(p => p._id !== id));
+      setStats(prev => ({ ...prev, pendingProperties: prev.pendingProperties - 1 }));
+      // Refresh properties list
+      const propertiesData = await getAllProperties();
+      setProperties(propertiesData.data);
+      alert(t('admin.propertyApproved'));
+    } catch (error) {
+      alert(t('admin.approveFailed'));
+    }
+  };
+
+  const handleRejectProperty = async (id) => {
+    if (window.confirm(t('admin.confirmReject'))) {
+      try {
+        await rejectProperty(id);
+        setPendingProperties(pendingProperties.filter(p => p._id !== id));
+        setStats(prev => ({ ...prev, pendingProperties: prev.pendingProperties - 1 }));
+        alert(t('admin.propertyRejected'));
+      } catch (error) {
+        alert(t('admin.rejectFailed'));
+      }
+    }
+  };
+
   return (
     <div className="admin-dashboard">
       <div className="admin-header">
@@ -143,6 +188,13 @@ const AdminDashboard = () => {
               <p>{t('admin.agents')}</p>
             </div>
           </div>
+          <div className="stat-card fade-in pending">
+            <div className="stat-icon">⏳</div>
+            <div className="stat-info">
+              <h3>{stats.pendingProperties}</h3>
+              <p>{t('admin.pendingProperties')}</p>
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -152,6 +204,12 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab('properties')}
           >
             {t('admin.propertiesTab')}
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'moderation' ? 'active' : ''}`}
+            onClick={() => setActiveTab('moderation')}
+          >
+            {t('admin.moderationTab')}
           </button>
           <button
             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
@@ -214,6 +272,67 @@ const AdminDashboard = () => {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'moderation' && (
+              <div className="moderation-table-container">
+                <h2>{t('admin.propertyModeration')}</h2>
+                {pendingProperties.length === 0 ? (
+                  <div className="empty-state">
+                    <p>{t('admin.noPendingProperties')}</p>
+                  </div>
+                ) : (
+                  <div className="table-wrapper">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>{t('property.title')}</th>
+                          <th>{t('admin.agent')}</th>
+                          <th>{t('property.location')}</th>
+                          <th>{t('property.price')}</th>
+                          <th>{t('property.bedrooms')}</th>
+                          <th>{t('property.dateAdded')}</th>
+                          <th>{t('admin.status')}</th>
+                          <th>{t('admin.actions')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingProperties.map((property) => (
+                          <tr key={property._id}>
+                            <td>{property.title}</td>
+                            <td>{property.agent?.name || property.agent?.email || 'N/A'}</td>
+                            <td>{property.location}</td>
+                            <td>{property.price.toLocaleString()} JOD</td>
+                            <td>{property.bedrooms}</td>
+                            <td>{new Date(property.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              <span className="status-badge pending">
+                                {t('admin.statusPending')}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="action-buttons">
+                                <button 
+                                  className="btn-approve"
+                                  onClick={() => handleApproveProperty(property._id)}
+                                >
+                                  ✓ {t('admin.approve')}
+                                </button>
+                                <button
+                                  className="btn-reject"
+                                  onClick={() => handleRejectProperty(property._id)}
+                                >
+                                  ✗ {t('admin.reject')}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 

@@ -95,4 +95,33 @@ export const deleteUser = async (id) => {
   return response.data;
 };
 
+// ========== Property Moderation APIs (Admin) ==========
+
+export const getPendingProperties = async () => {
+  const response = await api.get('/properties/admin/pending');
+  return response.data;
+};
+
+export const approveProperty = async (id) => {
+  const response = await api.patch(`/properties/${id}/approve`);
+  return response.data;
+};
+
+export const rejectProperty = async (id) => {
+  const response = await api.patch(`/properties/${id}/reject`);
+  return response.data;
+};
+
+// ========== Favorites APIs ==========
+
+export const toggleFavorite = async (propertyId) => {
+  const response = await api.post(`/users/favorites/${propertyId}`);
+  return response.data;
+};
+
+export const getFavorites = async () => {
+  const response = await api.get('/users/favorites');
+  return response.data;
+};
+
 export default api;

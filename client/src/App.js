@@ -12,6 +12,7 @@ import AddProperty from './pages/AddProperty';
 import MyProperties from './pages/MyProperties';
 import AdminDashboard from './pages/AdminDashboard';
 import PropertyDetails from './pages/PropertyDetails';
+import Favorites from './pages/Favorites';
 import './App.css';
 
 // Protected Route Component
@@ -41,6 +42,14 @@ function AppContent() {
             <Route path="/register" element={<Register />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/properties/:id" element={<PropertyDetails />} />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/add-property"
               element={

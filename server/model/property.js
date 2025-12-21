@@ -11,6 +11,12 @@ const propertySchema = new mongoose.Schema({
   // Contact Information
   contactPhone: { type: String, required: true },
   contactWhatsapp: { type: String },
-  contactEmail: { type: String }
+  contactEmail: { type: String },
+  // Approval Status
+  status: { 
+    type: String, 
+    enum: ['pending', 'approved', 'rejected'], 
+    default: 'pending' 
+  }
 }, { timestamps: true });
 module.exports = mongoose.model('Property', propertySchema);

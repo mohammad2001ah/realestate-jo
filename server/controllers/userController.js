@@ -145,4 +145,64 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser, loginUser, getAllUsers, updateUser, deleteUser };
+// Toggle favorite property (add/remove)
+const toggleFavorite = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { propertyId } = req.params;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Check if property is already in favorites
+    const favoriteIndex = user.favorites.indexOf(propertyId);
+    
+    if (favoriteIndex > -1) {
+      // Remove from favorites
+      user.favorites.splice(favoriteIndex, 1);
+      await user.save();
+      return res.status(200).json({ 
+        success: true, 
+        message: "Property removed from favorites",
+        isFavorite: false
+      });
+    } else {
+      // Add to favorites
+      user.favorites.push(propertyId);
+      await user.save();
+      return res.status(200).json({ 
+        success: true, 
+        message: "Property added to favorites",
+        isFavorite: true
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get user's favorite properties
+const getFavorites = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find user and populate favorites with property details
+    const user = await User.findById(userId).populate('favorites');
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      count: user.favorites.length,
+      data: user.favorites 
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+module.exports = { createUser, loginUser, getAllUsers, updateUser, deleteUser, toggleFavorite, getFavorites };

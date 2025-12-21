@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { auth } = require('../middleware/auth');
+const { auth, isAdmin } = require('../middleware/auth');
 const { isAgentOrAdmin } = require('../middleware/checkRole');
 const upload = require('../middleware/upload');
 const {
@@ -9,7 +9,10 @@ const {
   createProperty,
   updateProperty,
   getMyProperties,
-  deleteProperty
+  deleteProperty,
+  approveProperty,
+  rejectProperty,
+  getPendingProperties
 } = require('../controllers/propertyController');
 
 // Public routes
@@ -45,5 +48,10 @@ router.get('/:id', getPropertyById);
 router.post('/', auth, isAgentOrAdmin, createProperty);
 router.put('/:id', auth, isAgentOrAdmin, updateProperty);
 router.delete('/:id', auth, isAgentOrAdmin, deleteProperty);
+
+// Admin-only routes for property moderation
+router.get('/admin/pending', auth, isAdmin, getPendingProperties);
+router.patch('/:id/approve', auth, isAdmin, approveProperty);
+router.patch('/:id/reject', auth, isAdmin, rejectProperty);
 
 module.exports = router;

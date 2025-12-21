@@ -1,5 +1,5 @@
 const express = require('express');
-const { createUser, loginUser, getAllUsers, updateUser, deleteUser } = require('../controllers/userController');
+const { createUser, loginUser, getAllUsers, updateUser, deleteUser, toggleFavorite, getFavorites } = require('../controllers/userController');
 const { auth, isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,6 +7,10 @@ const router = express.Router();
 // Public routes
 router.post('/register', createUser);
 router.post('/login', loginUser);
+
+// Protected user routes
+router.post('/favorites/:propertyId', auth, toggleFavorite);
+router.get('/favorites', auth, getFavorites);
 
 // Admin-only routes
 router.get('/', auth, isAdmin, getAllUsers);

@@ -65,6 +65,11 @@ const Navbar = () => {
           <li>
             <Link to="/properties" className="nav-link">{t('nav.properties')}</Link>
           </li>
+          {isAuthenticated && (
+            <li>
+              <Link to="/favorites" className="nav-link">{t('nav.favorites')}</Link>
+            </li>
+          )}
           {/* Show About and Contact on home page only (not on admin page) */}
           {isHomePage && !isAdminPage && (
             <>

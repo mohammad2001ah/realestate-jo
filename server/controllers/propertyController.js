@@ -8,6 +8,15 @@ const getAllProperties = async (req, res) => {
     // Build filter object
     let filter = {};
     
+    // Only show approved properties (or properties without status - old properties) to non-admin users
+    // Admins can see all properties
+    if (!req.user || req.user.role !== 'admin') {
+      filter.$or = [
+        { status: 'approved' },
+        { status: { $exists: false } }  // Show old properties without status field
+      ];
+    }
+    
     if (location) {
       filter.location = { $regex: location, $options: 'i' }; // Case-insensitive search
     }
@@ -22,7 +31,7 @@ const getAllProperties = async (req, res) => {
       filter.bedrooms = Number(bedrooms);
     }
 
-    const properties = await Property.find(filter).sort({ createdAt: -1 });
+    const properties = await Property.find(filter).populate('agent', 'name email').sort({ createdAt: -1 });
     res.status(200).json({ success: true, count: properties.length, data: properties });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error', error: error.message });
@@ -141,11 +150,62 @@ const getMyProperties = async (req, res) => {
   }
 };
 
+// Approve property (Admin only)
+const approveProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    property.status = 'approved';
+    await property.save();
+
+    res.status(200).json({ success: true, message: 'Property approved successfully', data: property });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Reject property (Admin only)
+const rejectProperty = async (req, res) => {
+  try {
+    const property = await Property.findById(req.params.id);
+    
+    if (!property) {
+      return res.status(404).json({ success: false, message: 'Property not found' });
+    }
+
+    property.status = 'rejected';
+    await property.save();
+
+    res.status(200).json({ success: true, message: 'Property rejected successfully', data: property });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Get pending properties (Admin only)
+const getPendingProperties = async (req, res) => {
+  try {
+    const properties = await Property.find({ status: 'pending' })
+      .populate('agent', 'name email')
+      .sort({ createdAt: -1 });
+    res.status(200).json({ success: true, count: properties.length, data: properties });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getAllProperties,
   getPropertyById,
   createProperty,
   updateProperty,
   deleteProperty,
-  getMyProperties
+  getMyProperties,
+  approveProperty,
+  rejectProperty,
+  getPendingProperties
 };
