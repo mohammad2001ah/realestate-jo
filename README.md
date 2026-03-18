@@ -309,10 +309,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - MongoDB for the flexible database solution
 - All contributors who help improve this project
 
-## 📞 Support
-
-For support, email mohammad2001ah@example.com or open an issue in the GitHub repository.
-
----
-
-**Made with ❤️ in Jordan**
