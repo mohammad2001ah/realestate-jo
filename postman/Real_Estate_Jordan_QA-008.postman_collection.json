@@ -1,0 +1,1421 @@
+{
+  "info": {
+    "_postman_id": "5e209d32-66d5-4f13-9f4a-qa008realestate",
+    "name": "Real Estate Jordan - QA-008",
+    "description": "QA-008 API regression, validation, authentication/authorization, property, favorites, and admin tests generated from the current backend routes/controllers.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get(\"qaSuffix\")) {",
+          "  const s = Date.now().toString();",
+          "  pm.collectionVariables.set(\"qaSuffix\", s);",
+          "  pm.collectionVariables.set(\"qaUserEmail\", `qa.user.${s}@example.com`);",
+          "  pm.collectionVariables.set(\"qaAgentEmail\", `qa.agent.${s}@example.com`);",
+          "  pm.collectionVariables.set(\"securityAdminEmail\", `qa.admin.${s}@example.com`);",
+          "  pm.collectionVariables.set(\"shortPasswordEmail\", `qa.short.${s}@example.com`);",
+          "  pm.collectionVariables.set(\"invalidEmailValue\", `qa-invalid-${s}`);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "userPassword",
+      "value": "QaTest123!"
+    },
+    {
+      "key": "agentPassword",
+      "value": "QaTest123!"
+    },
+    {
+      "key": "userToken",
+      "value": ""
+    },
+    {
+      "key": "agentToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "propertyId",
+      "value": ""
+    },
+    {
+      "key": "qaUserId",
+      "value": ""
+    },
+    {
+      "key": "qaAgentId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Registration",
+      "item": [
+        {
+          "name": "Register QA User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA User\",\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"User created message\",()=>pm.expect(r.message).to.eql(\"User created successfully\"));",
+                  "pm.test(\"Token returned\",()=>pm.expect(r.token).to.be.a(\"string\").and.not.empty);",
+                  "if (r.token) pm.collectionVariables.set(\"userToken\",r.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate Registration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA User\",\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Duplicate message\",()=>pm.expect(pm.response.json().message).to.eql(\"User already exists\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing Password - Regression",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Missing Password\",\n  \"email\": \"missing.password.{{qaSuffix}}@example.com\",\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Missing password is handled as client validation error\", function () { pm.expect([400,422]).to.include(pm.response.code); });",
+                  "pm.test(\"Must not be 500\",()=>pm.expect(pm.response.code).to.not.eql(500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register QA Agent",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Agent\",\n  \"email\": \"{{qaAgentEmail}}\",\n  \"password\": \"{{agentPassword}}\",\n  \"role\": \"agent\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Agent token returned\",()=>pm.expect(r.token).to.be.a(\"string\").and.not.empty);",
+                  "if (r.token) pm.collectionVariables.set(\"agentToken\",r.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SECURITY - Public Registration Must Not Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Unauthorized Admin\",\n  \"email\": \"{{securityAdminEmail}}\",\n  \"password\": \"QaTest123!\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get(\"runSecurityWriteTests\") !== \"true\") {",
+                  "  console.log(\"Skipped: set runSecurityWriteTests=true only on a local/test DB\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Public registration must reject admin role\",()=>pm.expect(pm.response.code).to.not.eql(201));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Login",
+      "item": [
+        {
+          "name": "Valid Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Login successful\",()=>pm.expect(r.message).to.eql(\"Login successful\"));",
+                  "pm.test(\"Token returned\",()=>pm.expect(r.token).to.be.a(\"string\").and.not.empty);",
+                  "if(r.token) pm.collectionVariables.set(\"userToken\",r.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not.found.{{qaSuffix}}@example.com\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"No token\",()=>pm.expect(pm.response.json()).to.not.have.property(\"token\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": \"WrongPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"No token\",()=>pm.expect(pm.response.json()).to.not.have.property(\"token\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing Password - Known 500 Regression",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{qaUserEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Missing password should be validation error\", function () { pm.expect([400,422]).to.include(pm.response.code); });",
+                  "pm.test(\"Must not be 500\",()=>pm.expect(pm.response.code).to.not.eql(500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Numeric Password - Known 500 Regression",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": 123456\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Numeric password should be validation error\", function () { pm.expect([400,422]).to.include(pm.response.code); });",
+                  "pm.test(\"Must not be 500\",()=>pm.expect(pm.response.code).to.not.eql(500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Role Tampering in Login Body",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{qaUserEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Token exists\",()=>pm.expect(r.token).to.be.a(\"string\"));",
+                  "if (r.token) { const p=r.token.split(\".\")[1].replace(/-/g,\"+\").replace(/_/g,\"/\"); const payload=JSON.parse(atob(p)); pm.test(\"JWT role stays user\",()=>pm.expect(payload.role).to.eql(\"user\")); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login Existing Admin (Optional)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get(\"adminEmail\") || !pm.environment.get(\"adminPassword\")) {",
+                  "  console.log(\"Skipped: set adminEmail/adminPassword to run admin tests\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json(); if(r.token) pm.collectionVariables.set(\"adminToken\",r.token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Public Properties",
+      "item": [
+        {
+          "name": "Get All Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json(); pm.test(\"Response shape\",()=>{pm.expect(r.success).to.eql(true);pm.expect(r.data).to.be.an(\"array\");});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by Location",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties?location=Amman"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter by Price and Bedrooms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties?minPrice=1&maxPrice=999999999&bedrooms=3"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Nonexistent Valid Property ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/000000000000000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Malformed Property ID - Regression",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/not-a-valid-object-id"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Malformed ID should be rejected cleanly\", function () { pm.expect([400,404]).to.include(pm.response.code); });",
+                  "pm.test(\"Must not be 500\",()=>pm.expect(pm.response.code).to.not.eql(500));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Authentication & Authorization",
+      "item": [
+        {
+          "name": "Favorites Without Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/favorites"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Property Without Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/properties",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized\",\n  \"price\": 1,\n  \"location\": \"Amman\",\n  \"area\": 1,\n  \"bedrooms\": 1,\n  \"contactPhone\": \"0790000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Property as Regular User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/properties",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Forbidden User Property\",\n  \"price\": 100000,\n  \"location\": \"Amman\",\n  \"area\": 100,\n  \"bedrooms\": 2,\n  \"contactPhone\": \"0790000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My Properties as Regular User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/my-properties",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Users as Regular User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Pending as Regular User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/admin/pending",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Protected Route with Invalid Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/favorites",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "invalid.jwt.token",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Agent Property Flow",
+      "item": [
+        {
+          "name": "Create Property as Agent",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/properties",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"QA Automated Property {{qaSuffix}}\",\n  \"description\": \"Created by QA-008 Postman collection\",\n  \"price\": 125000,\n  \"location\": \"Amman\",\n  \"area\": 140,\n  \"bedrooms\": 3,\n  \"images\": [],\n  \"contactPhone\": \"0790000000\",\n  \"contactWhatsapp\": \"0790000000\",\n  \"contactEmail\": \"{{qaAgentEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 201\", function () { pm.response.to.have.status(201); });",
+                  "const r=pm.response.json();",
+                  "pm.test(\"Property created\",()=>pm.expect(r.success).to.eql(true));",
+                  "if(r.data && r.data._id) pm.collectionVariables.set(\"propertyId\",r.data._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Properties as Agent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/my-properties",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SECURITY - Pending Property Must Not Be Public by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/{{propertyId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Pending property is not publicly exposed\",()=>pm.expect([403,404]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Own Property as Agent",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/properties/{{propertyId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 126000,\n  \"description\": \"Updated by QA-008\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload Endpoint - No Files",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/properties/upload",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{agentToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Favorites",
+      "item": [
+        {
+          "name": "Add Property to Favorites",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/favorites/{{propertyId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Marked favorite\",()=>pm.expect(pm.response.json().isFavorite).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Favorites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users/favorites",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Property from Favorites",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/favorites/{{propertyId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Removed favorite\",()=>pm.expect(pm.response.json().isFavorite).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Admin Flow",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/users",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+                  "const r=pm.response.json();",
+                  "if(Array.isArray(r.data)){ const u=r.data.find(x=>x.email===pm.collectionVariables.get(\"qaUserEmail\")); const a=r.data.find(x=>x.email===pm.collectionVariables.get(\"qaAgentEmail\")); if(u) pm.collectionVariables.set(\"qaUserId\",u._id); if(a) pm.collectionVariables.set(\"qaAgentId\",a._id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Pending Properties",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/admin/pending",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve QA Property",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/properties/{{propertyId}}/approve",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Approved Property Publicly",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/properties/{{propertyId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete QA Property as Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/properties/{{propertyId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Frontend vs API Validation",
+      "item": [
+        {
+          "name": "Short Password Should Match Frontend Rule",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Short Password\",\n  \"email\": \"{{shortPasswordEmail}}\",\n  \"password\": \"12345\",\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get(\"runSecurityWriteTests\") !== \"true\") {",
+                  "  console.log(\"Skipped: set runSecurityWriteTests=true only on a local/test DB\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"API should reject password shorter than 6\",()=>pm.expect([400,422]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid Email Format Should Be Rejected",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/users/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"QA Invalid Email\",\n  \"email\": \"{{invalidEmailValue}}\",\n  \"password\": \"QaTest123!\",\n  \"role\": \"user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get(\"runSecurityWriteTests\") !== \"true\") {",
+                  "  console.log(\"Skipped: set runSecurityWriteTests=true only on a local/test DB\");",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"API should reject invalid email format\",()=>pm.expect([400,422]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 - Cleanup (Admin Required)",
+      "item": [
+        {
+          "name": "Delete Generated QA User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{qaUserId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "if(!pm.collectionVariables.get(\"qaUserId\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Generated QA Agent",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/users/{{qaAgentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"adminToken\")) {",
+                  "  console.log(\"Skipped: adminToken is not set\");",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "if(!pm.collectionVariables.get(\"qaAgentId\")) pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
